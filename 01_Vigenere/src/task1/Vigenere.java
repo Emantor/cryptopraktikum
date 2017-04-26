@@ -13,6 +13,9 @@ package task1;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
 
@@ -54,6 +57,21 @@ public class Vigenere extends Cipher {
    * Der Writer, der den Klartext schreiben soll.
    */
   public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
+    int length = this.keyword.length;
+    int read = 0;
+    char[] buf = new char[length];
+    try {
+      while ((read = ciphertext.read(buf, 0, length)) !=-1) {
+        for (int i=0;i < read; i++) {
+          int mapped_int = charMap.mapChar(buf[i]);
+          mapped_int = charMap.remapChar(mapped_int + (modulus - keyword[i]) % modulus);
+          cleartext.write(mapped_int);
+        }
+      }
+    }
+    catch(IOException e){
+      System.exit(1);
+    }
 
   }
 
@@ -69,16 +87,21 @@ public class Vigenere extends Cipher {
    */
   public void encipher(BufferedReader cleartext, BufferedWriter ciphertext) {
       // acquire cleartext and turn into internal representation
-    int length = this.keyword.length();
+    int length = this.keyword.length;
     int read = 0;
-    char[] buf = char[length];
+    char[] buf = new char[length];
     ArrayList<Character> output = new ArrayList<Character>();
-    while ((read = cleartext.read(buf, 0, length)) !=-1) {
-      for (i=0,i < read, i++) {
-        int mapped_int = CharMap.mapChar(buf[i]);
-        mapped_int = CharMap.remapChar((mapped_int + keyword[i]) % modulus);
-        ciphertext.write(mapped_int);
+    try {
+      while ((read = cleartext.read(buf, 0, length)) !=-1) {
+        for (int i=0; i < read; i++) {
+          int mapped_int = charMap.mapChar(buf[i]);
+          mapped_int = charMap.remapChar((mapped_int + keyword[i]) % modulus);
+          ciphertext.write(mapped_int);
+        }
       }
+    }
+    catch(IOException e){
+      System.exit(1);
     }
   }
 
@@ -106,7 +129,7 @@ public class Vigenere extends Cipher {
               + "korrigieren Sie Ihre Eingabe.");
         } else {
           // Prüfe, ob zum eingegebenen Modulus ein Default-Alphabet existiert.
-          String defaultAlphabet = CharacterMapping.getDefaultAlphabet(modulus);
+          String defaultAlphabet = charMap.getDefaultAlphabet(modulus);
           if (!defaultAlphabet.equals("")) {
             msg = "Vordefiniertes Alphabet: '" + defaultAlphabet
                 + "'\nDieses vordefinierte Alphabet kann durch Angabe einer "
@@ -141,15 +164,16 @@ public class Vigenere extends Cipher {
         System.out.print("Geben Sie das Schlüsselwort ein: ");
         String keyString = standardInput.readLine();
 	// Verify that keyword consists of legal characters only
-	this.keyword = new int[keyword.length()]();
+	this.keyword = new int[keyword.length];
 	// map input to internal alphabet
-	for (int i =0;i<keyword.length();i++) {
-	    mapped_char = charMap.mapChar(keyString.charAt[i]);
+	for (int i = 0; i < keyword.length; i++) {
+	    int mapped_char = charMap.mapChar(keyString.charAt(i));
 	    if ((mapped_char == '·') || (mapped_char == -1)) {
 		// need to throw some fitting exception
 		throw new NumberFormatException();
 	    } else {
-		key[i] = mapped_char;
+		keyword[i] = mapped_char;
+            }
 	}
         accepted = true;
       } catch (NumberFormatException e) {
@@ -177,11 +201,11 @@ public class Vigenere extends Cipher {
       StringTokenizer st = new StringTokenizer(key.readLine(), " ");
       modulus = Integer.parseInt(st.nextToken());
       System.out.println("Modulus: " + modulus);
-      this.keyword = int[st.countTokens()];
+      this.keyword = new int[st.countTokens()];
 
       int i = 0;
       while(st.hasMoreTokens()) {
-        this.keyword[i++] = Integer.parseInt(st.nextToken())
+        this.keyword[i++] = Integer.parseInt(st.nextToken());
       }
       System.out.println("Verschiebung: " + keyword);
       key.close();
@@ -210,7 +234,7 @@ public class Vigenere extends Cipher {
     try {
       String keyString = "";
 
-      for(i = 0; i < keyword.length; i++) {
+      for(int i = 0; i < keyword.length; i++) {
         keyString = keyString + " " + keyword[i];
       }
       key.write(modulus + keyString);
