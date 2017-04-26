@@ -69,10 +69,17 @@ public class Vigenere extends Cipher {
    */
   public void encipher(BufferedReader cleartext, BufferedWriter ciphertext) {
       // acquire cleartext and turn into internal representation
-      while
-
-
-
+    int length = this.keyword.length();
+    int read = 0;
+    char[] buf = char[length];
+    ArrayList<Character> output = new ArrayList<Character>();
+    while ((read = cleartext.read(buf, 0, length)) !=-1) {
+      for (i=0,i < read, i++) {
+        int mapped_int = CharMap.mapChar(buf[i]);
+        mapped_int = CharMap.remapChar((mapped_int + keyword[i]) % modulus);
+        ciphertext.write(mapped_int);
+      }
+    }
   }
 
   /**
@@ -82,7 +89,6 @@ public class Vigenere extends Cipher {
    * @see #writeKey writeKey
    */
   public void makeKey() {
-
     BufferedReader standardInput = launcher.openStandardInput();
     boolean accepted = false;
     String msg = "Geeignete Werte für den Modulus werden in der Klasse "
@@ -167,6 +173,29 @@ public class Vigenere extends Cipher {
    */
   public void readKey(BufferedReader key) {
 
+    try {
+      StringTokenizer st = new StringTokenizer(key.readLine(), " ");
+      modulus = Integer.parseInt(st.nextToken());
+      System.out.println("Modulus: " + modulus);
+      this.keyword = int[st.countTokens()];
+
+      int i = 0;
+      while(st.hasMoreTokens()) {
+        this.keyword[i++] = Integer.parseInt(st.nextToken())
+      }
+      System.out.println("Verschiebung: " + keyword);
+      key.close();
+    } catch (IOException e) {
+      System.err.println("Abbruch: Fehler beim Lesen oder Schließen der "
+                         + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    } catch (NumberFormatException e) {
+      System.err.println("Abbruch: Fehler beim Parsen eines Wertes aus der "
+                         + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   /**
@@ -178,6 +207,20 @@ public class Vigenere extends Cipher {
    * @see #readKey readKey
    */
   public void writeKey(BufferedWriter key) {
+    try {
+      String keyString = "";
 
+      for(i = 0; i < keyword.length; i++) {
+        keyString = keyString + " " + keyword[i];
+      }
+      key.write(modulus + keyString);
+      key.newLine();
+      key.close();
+    } catch (IOException e) {
+      System.out.println("Abbruch: Fehler beim Schreiben oder Schließen der "
+                         + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 }
